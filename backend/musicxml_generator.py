@@ -14,10 +14,9 @@ class StandardMusicXMLGenerator:
     生成符合 MuseScore 3.1 标准的 MusicXML 或压缩 MXL 文件
     """
 
-    def __init__(self, title="未命名作品", creators=None, rights=""):
+    def __init__(self, title="未命名作品", artist=""):
         self.title = title
-        self.creators = creators or {}
-        self.rights = rights
+        self.artist = artist
         self.measures = []  # 每个元素为小节字典
 
     # ---------------------------------------------------------
@@ -42,11 +41,8 @@ class StandardMusicXMLGenerator:
 
         # ---- identification ----
         id_el = ET.SubElement(root, "identification")
-        for role, name in self.creators.items():
-            if name:
-                ET.SubElement(id_el, "creator", type=role).text = name
-        if self.rights:
-            self._txt(id_el, "rights", self.rights)
+        if self.artist:
+            ET.SubElement(id_el, "creator", type="artist").text = self.artist
 
         enc = ET.SubElement(id_el, "encoding")
         self._txt(enc, "software", "MuseScore 2.2.1")
@@ -97,11 +93,7 @@ class StandardMusicXMLGenerator:
                 "valign": "bottom",
                 "font-size": "12",
             },
-        ).text = (
-            f"原作词：{self.creators.get('lyricist', '')}"
-            f" 原作曲：{self.creators.get('composer', '')}"
-            f" 译/改编：{self.creators.get('translator', '')}"
-        )
+        ).text = f"原唱：{self.artist}" if self.artist else ""
 
         credit_title = ET.SubElement(root, "credit", page="1")
         ET.SubElement(
@@ -198,19 +190,35 @@ class StandardMusicXMLGenerator:
                     self._txt(note, "duration", str(duration_val))
                     self._txt(note, "voice", "1")
                     self._txt(note, "type", note_type)
+
                 else:
                     pitch = ET.SubElement(note, "pitch")
                     self._txt(pitch, "step", note_data.get("step", "C"))
-
-                    # ✅ 写入升降号
                     if note_data.get("alter") not in (None, 0):
                         self._txt(pitch, "alter", str(note_data["alter"]))
-
                     self._txt(pitch, "octave", str(note_data.get("octave", 4)))
+
                     self._txt(note, "duration", str(duration_val))
+
+                    # ✅ 在 voice/type/stem 之前处理 tie
+                    tie_start = note_data.get("tie_start") or note_data.get("slur") == "start"
+                    tie_stop = note_data.get("tie_stop") or note_data.get("slur") == "stop"
+                    if tie_start:
+                        ET.SubElement(note, "tie", {"type": "start"})
+                    if tie_stop:
+                        ET.SubElement(note, "tie", {"type": "stop"})
+
                     self._txt(note, "voice", "1")
                     self._txt(note, "type", note_type)
                     ET.SubElement(note, "stem").text = note_data.get("stem", "up")
+
+                    # ✅ notations/tied 用于谱面显示
+                    if tie_start or tie_stop:
+                        notations = ET.SubElement(note, "notations")
+                        if tie_start:
+                            ET.SubElement(notations, "tied", {"type": "start"})
+                        if tie_stop:
+                            ET.SubElement(notations, "tied", {"type": "stop"})
 
         # ✅ 循环结束后返回完整 XML 树
         return root

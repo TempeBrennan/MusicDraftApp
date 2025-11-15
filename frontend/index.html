@@ -4,213 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <title>🎵 简谱 → MusicXML 可视编辑器</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: #f8f9fa;
-    }
-
-    header {
-      background: #f0f0f0;
-      border-bottom: 1px solid #ccc;
-      padding: 6px 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    header input {
-      padding: 4px;
-      font-size: 0.9em;
-    }
-
-    header button {
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-
-    #main {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
-    /* 左侧面板 */
-    #note-palette {
-      width: 230px;
-      background: #fafafa;
-      border-right: 1px solid #ddd;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #palette-tones {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
-    #palette-tones button {
-      width: 30px;
-      height: 30px;
-      border: 1px solid #777;
-      border-radius: 4px;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    #palette-tones button.activeStep {
-      background: #007bff;
-      color: white;
-    }
-
-    select,
-    input,
-    button {
-      font-size: 0.9em;
-    }
-
-    #note-palette label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    /* 中间展示区 */
-    #score-area {
-      flex: 1;
-      background: white;
-      overflow: auto;
-      padding: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      align-content: flex-start;
-    }
-
-    .measure {
-      position: relative;
-      border: 1px solid #ccc;
-      min-width: 160px;
-      margin: 4px;
-      padding: 4px;
-      border-radius: 4px;
-      background: #FCFCFD;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .measure::before {
-      content: attr(data-num) " |";
-      font-weight: bold;
-      margin-right: 8px;
-      color: #888;
-    }
-
-    .measure button.del-measure {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      font-size: 10px;
-      background: #fee;
-      border: 1px solid #c66;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .note-block {
-      width: 32px;
-      height: 32px;
-      border: 1px solid #aaa;
-      border-radius: 4px;
-      margin: 2px;
-      text-align: center;
-      line-height: 32px;
-      cursor: pointer;
-      background: #f2f2f2;
-      position: relative;
-    }
-
-    .note-block.rest {
-      background: #eee;
-      color: #999;
-    }
-
-    .note-block.selected {
-      background: #cce5ff;
-      border-color: #007bff;
-    }
-
-    .note-block button.del-note {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background: #f66;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 14px;
-      height: 14px;
-      line-height: 10px;
-      font-size: 10px;
-      cursor: pointer;
-      display: none;
-    }
-
-    .note-block:hover button.del-note {
-      display: block;
-    }
-
-    /* 右侧属性窗 */
-    #note-editor {
-      width: 260px;
-      background: #fafafa;
-      border-left: 1px solid #ddd;
-      padding: 10px;
-    }
-
-    #note-editor h4 {
-      margin: 6px 0;
-    }
-
-    #note-editor label {
-      display: block;
-      margin: 6px 0;
-    }
-
-    #note-editor select {
-      width: 100%;
-      padding: 4px;
-      box-sizing: border-box;
-    }
-
-    #updateNote {
-      margin-top: 10px;
-      width: 100%;
-      padding: 6px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    #updateNote:hover {
-      background: #0069d9;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <header>
     🎵 曲名：
-    <input id="titleInput" type="text" placeholder="请输入曲名" style="width:180px;">
-    作曲：
-    <input id="composerInput" type="text" placeholder="作者或作曲人" style="width:140px;">
+    <input id="titleInput" type="text" placeholder="请输入曲名" value="我的第一首歌曲" style="width:180px;">
+    原唱：
+    <input id="composerInput" type="text" placeholder="某歌手" value="某歌手" style="width:140px;">
 
     <button id="btnNewMeasure">➕ 添加小节</button>
     <button id="btnExportMXL">📦 导出 MXL</button>
@@ -247,11 +49,44 @@
         </select>
       </label>
 
+      <label>八度升降:
+        <select id="octaveShiftSel">
+          <option value="0" selected>不变</option>
+          <option value="1">升八度 ●</option>
+          <option value="-1">降八度 ●</option>
+        </select>
+      </label>
+
       <label>时值:
         <select id="durSel">
           <option value="1">八分</option>
           <option value="2" selected>四分</option>
           <option value="4">二分</option>
+          <option value="8">全音符</option>
+        </select>
+      </label>
+
+      <label>增时线:
+        <select id="extendLineSel">
+          <option value="0" selected>无</option>
+          <option value="1">1条 -</option>
+          <option value="2">2条 - -</option>
+          <option value="3">3条 - - -</option>
+        </select>
+      </label>
+
+      <label>减时线:
+        <select id="reduceLineSel">
+          <option value="0" selected>无</option>
+          <option value="1">1条</option>
+          <option value="2">2条</option>
+        </select>
+      </label>
+
+      <label>附点:
+        <select id="dottedSel">
+          <option value="0" selected>无</option>
+          <option value="1">附点 ·</option>
         </select>
       </label>
 
@@ -286,10 +121,31 @@
             <option selected>4</option>
             <option>5</option>
           </select></label>
+        <label>八度升降:<select id="editOctaveShift">
+            <option value="0" selected>不变</option>
+            <option value="1">升八度 ●</option>
+            <option value="-1">降八度 ●</option>
+          </select></label>
         <label>时值:<select id="editDur">
             <option value="1">八分</option>
             <option value="2">四分</option>
             <option value="4">二分</option>
+            <option value="8">全音符</option>
+          </select></label>
+        <label>增时线:<select id="editExtendLine">
+            <option value="0" selected>无</option>
+            <option value="1">1条 -</option>
+            <option value="2">2条 - -</option>
+            <option value="3">3条 - - -</option>
+          </select></label>
+        <label>减时线:<select id="editReduceLine">
+            <option value="0" selected>无</option>
+            <option value="1">1条</option>
+            <option value="2">2条</option>
+          </select></label>
+        <label>附点:<select id="editDotted">
+            <option value="0" selected>无</option>
+            <option value="1">附点 ·</option>
           </select></label>
         <label>连音:<select id="editSlur">
             <option value="">无</option>
@@ -307,157 +163,7 @@
     </div>
   </div>
 
-  <script>
-    // ---------- 数据结构 ----------
-    const Editor = {
-      measures: [[]],
-      selected: null,
-    };
-
-    // ---------- 工具函数 ----------
-    const durName = d => ({ 1: "eighth", 2: "quarter", 4: "half" }[d] || "quarter");
-    const pitchToNum = s => ({ C: "1", D: "2", E: "3", F: "4", G: "5", A: "6", B: "7" }[s] || "?");
-
-    // ---------- 渲染函数 ----------
-    function renderScore() {
-      const area = document.getElementById('score-area');
-      area.innerHTML = "";
-      Editor.measures.forEach((m, mi) => {
-        const mDiv = document.createElement('div');
-        mDiv.className = "measure";
-        mDiv.dataset.num = mi + 1;
-
-        // 删除小节
-        const delM = document.createElement("button");
-        delM.className = "del-measure";
-        delM.textContent = "×";
-        delM.onclick = () => { Editor.measures.splice(mi, 1); renderScore(); };
-        mDiv.appendChild(delM);
-
-        // 音符块
-        m.forEach((n, ni) => {
-          const el = document.createElement("div");
-          el.className = "note-block" + (n.type === "rest" ? " rest" : "");
-          el.textContent = (n.type === "rest" ? "休" : pitchToNum(n.step));
-          if (Editor.selected && Editor.selected.mi === mi && Editor.selected.ni === ni)
-            el.classList.add("selected");
-          // 删除按钮
-          const del = document.createElement("button");
-          del.className = "del-note";
-          del.textContent = "×";
-          del.onclick = e => {
-            e.stopPropagation();
-            m.splice(ni, 1);
-            renderScore();
-          };
-          el.appendChild(del);
-          el.onclick = () => selectNote(mi, ni, el);
-          mDiv.appendChild(el);
-        });
-
-        area.appendChild(mDiv);
-      });
-    }
-
-    // ---------- 选择 & 更新音符 ----------
-    function selectNote(mi, ni, el) {
-      document.querySelectorAll(".note-block").forEach(b => b.classList.remove("selected"));
-      el.classList.add("selected");
-      Editor.selected = { mi, ni };
-      const n = Editor.measures[mi][ni];
-      document.getElementById("noSelection").style.display = "none";
-      const form = document.getElementById("editorForm");
-      form.style.display = "block";
-      form.querySelector("#editStep").value = n.step || "C";
-      form.querySelector("#editAlter").value = n.alter || 0;
-      form.querySelector("#editOctave").value = n.octave || 4;
-      form.querySelector("#editDur").value = n.duration || 2;
-      form.querySelector("#editSlur").value = n.slur || "";
-      form.querySelector("#editBeam").value = n.beam || "";
-    }
-
-    document.getElementById("updateNote").onclick = () => {
-      const s = Editor.selected;
-      if (!s) return;
-      const n = Editor.measures[s.mi][s.ni];
-      n.step = document.getElementById("editStep").value;
-      n.alter = parseInt(document.getElementById("editAlter").value);
-      n.octave = parseInt(document.getElementById("editOctave").value);
-      n.duration = parseInt(document.getElementById("editDur").value);
-      n.xml_type = durName(n.duration);
-      n.slur = document.getElementById("editSlur").value || undefined;
-      n.beam = document.getElementById("editBeam").value || undefined;
-      renderScore();
-    }
-
-    // ---------- 添加音符 ----------
-    document.getElementById("addNoteBtn").onclick = () => {
-      const active = document.querySelector(".tone.activeStep");
-      const step = active ? active.dataset.step : null;
-      const alter = parseInt(document.getElementById("alterSel").value);
-      const oct = parseInt(document.getElementById("octSel").value);
-      const dur = parseInt(document.getElementById("durSel").value);
-      const note = step
-        ? { type: "note", step, alter, octave: oct, duration: dur, xml_type: durName(dur) }
-        : { type: "rest", duration: dur, xml_type: durName(dur) };
-      if (Editor.measures.length === 0) Editor.measures.push([]);
-      Editor.measures.at(-1).push(note);
-      renderScore();
-    };
-
-    // ---------- UI事件 ----------
-    document.querySelectorAll(".tone").forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll(".tone").forEach(b => b.classList.remove("activeStep"));
-        btn.classList.add("activeStep");
-      };
-    });
-    document.getElementById("restBtn").onclick = () => {
-      document.querySelectorAll(".tone").forEach(b => b.classList.remove("activeStep"));
-    };
-
-    document.getElementById("btnNewMeasure").onclick = () => {
-      Editor.measures.push([]);
-      renderScore();
-    };
-
-    // ---------- 导出 MXL ----------
-    document.getElementById("btnExportMXL").onclick = async () => {
-      let title = document.getElementById("titleInput").value.trim() || "未命名";
-      let composer = document.getElementById("composerInput").value.trim() || "匿名";
-
-      const body = {
-        title,
-        creators: { composer },
-        measures: Editor.measures.map((m, i) => ({
-          number: i + 1,
-          bpm: 120,
-          new_system: i % 4 === 0, // 每4小节换行
-          notes: m
-        }))
-      };
-
-      try {
-        const res = await fetch("/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-
-        if (!res.ok) throw new Error("服务器返回错误");
-
-        const blob = await res.blob();
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `${title}.mxl`;
-        a.click();
-      } catch (err) {
-        alert("导出失败：" + err.message);
-      }
-    };
-
-    renderScore();
-  </script>
+  <script src="app.js"></script>
 </body>
 
 </html>

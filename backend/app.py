@@ -37,15 +37,14 @@ class Measure(BaseModel):
 
 class ScoreRequest(BaseModel):
     title: str
-    creators: dict
-    rights: str = ""
+    artist: str = ""
     measures: list[Measure]
 
 # ---------- 生成 XML ----------
 @app.post("/generate")
 def generate_xml(data: ScoreRequest):
     generator = StandardMusicXMLGenerator(
-        title=data.title, creators=data.creators, rights=data.rights
+        title=data.title, artist=data.artist
     )
     generator.measures = [m.dict() for m in data.measures]
 
