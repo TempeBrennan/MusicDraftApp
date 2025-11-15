@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "dev": "uvicorn backend.app:app --reload"
+  }
+}
