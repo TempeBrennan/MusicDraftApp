@@ -14,9 +14,20 @@
     原唱：
     <input id="composerInput" type="text" placeholder="某歌手" value="某歌手" style="width:140px;">
 
+    <button id="btnSaveSong">💾 保存歌曲</button>
+    <button id="btnLoadSong">📂 我的歌曲</button>
+    <button id="btnNewSong">🆕 新建歌曲</button>
     <button id="btnNewMeasure">➕ 添加小节</button>
     <button id="btnExportMXL">📦 导出 MXL</button>
   </header>
+
+  <!-- 歌曲列表弹窗 -->
+  <div id="songListModal" style="display:none;">
+    <div id="songListContent">
+      <h3>我的歌曲 <button id="closeSongList">✕</button></h3>
+      <div id="songList"></div>
+    </div>
+  </div>
 
   <div id="main">
     <!-- 左侧面板 -->

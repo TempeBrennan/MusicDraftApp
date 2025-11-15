@@ -2,11 +2,57 @@
 const Editor = {
   measures: [[]],
   selected: null,
+  currentSongId: null, // 当前编辑的歌曲ID
 };
 
 // ---------- 工具函数 ----------
 const durName = d => ({ 0.5: "16th", 1: "eighth", 2: "quarter", 4: "half", 8: "whole" }[d] || "quarter");
 const pitchToNum = s => ({ C: "1", D: "2", E: "3", F: "4", G: "5", A: "6", B: "7" }[s] || "?");
+
+// 生成UUID
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+// ---------- 本地存储管理 ----------
+const SongStorage = {
+  // 获取所有歌曲
+  getAllSongs() {
+    const songs = localStorage.getItem('musicDraftSongs');
+    return songs ? JSON.parse(songs) : [];
+  },
+  
+  // 保存歌曲
+  saveSong(song) {
+    const songs = this.getAllSongs();
+    const index = songs.findIndex(s => s.id === song.id);
+    
+    if (index !== -1) {
+      songs[index] = song;
+    } else {
+      songs.push(song);
+    }
+    
+    localStorage.setItem('musicDraftSongs', JSON.stringify(songs));
+  },
+  
+  // 删除歌曲
+  deleteSong(id) {
+    const songs = this.getAllSongs();
+    const filtered = songs.filter(s => s.id !== id);
+    localStorage.setItem('musicDraftSongs', JSON.stringify(filtered));
+  },
+  
+  // 获取单个歌曲
+  getSong(id) {
+    const songs = this.getAllSongs();
+    return songs.find(s => s.id === id);
+  }
+};
 
 // 绘制连梁
 function drawBeam(measureDiv, startIndex, endIndex) {
@@ -273,6 +319,102 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("btnNewMeasure").onclick = () => {
     Editor.measures.push([]);
     renderScore();
+  };
+
+  // ---------- 保存歌曲 ----------
+  document.getElementById("btnSaveSong").onclick = () => {
+    const title = document.getElementById("titleInput").value.trim() || "未命名歌曲";
+    const artist = document.getElementById("composerInput").value.trim() || "某歌手";
+    
+    const song = {
+      id: Editor.currentSongId || generateUUID(),
+      title,
+      artist,
+      measures: Editor.measures,
+      updatedAt: new Date().toISOString()
+    };
+    
+    SongStorage.saveSong(song);
+    Editor.currentSongId = song.id;
+    alert(`✅ 歌曲"${title}"已保存！`);
+  };
+
+  // ---------- 新建歌曲 ----------
+  document.getElementById("btnNewSong").onclick = () => {
+    if (confirm("确定要新建歌曲吗？未保存的更改将丢失。")) {
+      Editor.measures = [[]];
+      Editor.currentSongId = null;
+      document.getElementById("titleInput").value = "我的第一首歌曲";
+      document.getElementById("composerInput").value = "某歌手";
+      renderScore();
+    }
+  };
+
+  // ---------- 加载歌曲列表 ----------
+  document.getElementById("btnLoadSong").onclick = () => {
+    showSongList();
+  };
+
+  document.getElementById("closeSongList").onclick = () => {
+    document.getElementById("songListModal").style.display = "none";
+  };
+
+  // 点击背景关闭弹窗
+  document.getElementById("songListModal").onclick = (e) => {
+    if (e.target.id === "songListModal") {
+      document.getElementById("songListModal").style.display = "none";
+    }
+  };
+
+  // ---------- 显示歌曲列表 ----------
+  function showSongList() {
+    const songs = SongStorage.getAllSongs();
+    const listDiv = document.getElementById("songList");
+    
+    if (songs.length === 0) {
+      listDiv.innerHTML = '<p style="text-align:center; color:#999;">暂无保存的歌曲</p>';
+    } else {
+      listDiv.innerHTML = songs.map(song => {
+        const date = new Date(song.updatedAt).toLocaleString('zh-CN');
+        return `
+          <div class="song-item">
+            <div class="song-info" onclick="loadSong('${song.id}')">
+              <div class="song-title">${song.title}</div>
+              <div class="song-meta">原唱: ${song.artist} | 更新: ${date} | 小节数: ${song.measures.length}</div>
+            </div>
+            <div class="song-actions">
+              <button onclick="loadSong('${song.id}')">打开</button>
+              <button class="delete-btn" onclick="deleteSong('${song.id}', event)">删除</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    document.getElementById("songListModal").style.display = "flex";
+  }
+
+  // 加载歌曲
+  window.loadSong = (id) => {
+    const song = SongStorage.getSong(id);
+    if (song) {
+      Editor.measures = song.measures;
+      Editor.currentSongId = song.id;
+      document.getElementById("titleInput").value = song.title;
+      document.getElementById("composerInput").value = song.artist;
+      renderScore();
+      document.getElementById("songListModal").style.display = "none";
+    }
+  };
+
+  // 删除歌曲
+  window.deleteSong = (id, event) => {
+    event.stopPropagation();
+    const song = SongStorage.getSong(id);
+    if (song && confirm(`确定要删除歌曲"${song.title}"吗？`)) {
+      SongStorage.deleteSong(id);
+      showSongList();
+    }
   };
 
   // ---------- 导出 MXL ----------

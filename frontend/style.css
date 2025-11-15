@@ -26,6 +26,108 @@ header button {
   cursor: pointer;
 }
 
+/* 歌曲列表弹窗 */
+#songListModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+#songListContent {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+#songListContent h3 {
+  margin: 0 0 15px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#closeSongList {
+  background: #f66;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.song-item {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.song-item:hover {
+  background: #f5f5f5;
+}
+
+.song-info {
+  flex: 1;
+}
+
+.song-title {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 4px;
+}
+
+.song-meta {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.song-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.song-actions button {
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.song-actions button:hover {
+  background: #f0f0f0;
+}
+
+.song-actions .delete-btn {
+  background: #fee;
+  border-color: #fcc;
+  color: #c00;
+}
+
+.song-actions .delete-btn:hover {
+  background: #fcc;
+}
+
 #main {
   flex: 1;
   display: flex;
