@@ -34,7 +34,7 @@ header button {
 
 /* 左侧面板 */
 #note-palette {
-  width: 230px;
+  width: 300px;
   background: #fafafa;
   border-right: 1px solid #ddd;
   padding: 8px;
@@ -68,9 +68,38 @@ button {
   font-size: 0.9em;
 }
 
-#note-palette label {
-  display: block;
-  margin-top: 10px;
+#addNoteBtn {
+    margin: 5px;
+    width: fit-content;
+}
+
+/* 单选按钮组样式 */
+fieldset {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 8px 0;
+}
+
+fieldset legend {
+  font-size: 0.85em;
+  font-weight: bold;
+  color: #555;
+  padding: 0 4px;
+}
+
+fieldset label {
+  display: inline-flex;
+  align-items: center;
+  margin: 4px 6px 4px 0;
+  cursor: pointer;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+fieldset input[type="radio"] {
+  margin-right: 2px;
+  cursor: pointer;
 }
 
 /* 中间展示区 */
@@ -220,6 +249,15 @@ button {
   display: block;
 }
 
+/* 连梁 */
+.beam-line {
+  position: absolute;
+  height: 2px;
+  background: #333;
+  pointer-events: none;
+  z-index: 2;
+}
+
 /* 附点（右上角） */
 .dotted-mark {
   position: absolute;
@@ -267,18 +305,13 @@ button {
 
 /* 右侧属性窗 */
 #note-editor {
-  width: 260px;
+  width: 300px;
   background: #fafafa;
   border-left: 1px solid #ddd;
   padding: 10px;
 }
 
 #note-editor h4 {
-  margin: 6px 0;
-}
-
-#note-editor label {
-  display: block;
   margin: 6px 0;
 }
 

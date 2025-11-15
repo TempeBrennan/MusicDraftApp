@@ -8,6 +8,35 @@ const Editor = {
 const durName = d => ({ 0.5: "16th", 1: "eighth", 2: "quarter", 4: "half", 8: "whole" }[d] || "quarter");
 const pitchToNum = s => ({ C: "1", D: "2", E: "3", F: "4", G: "5", A: "6", B: "7" }[s] || "?");
 
+// 绘制连梁
+function drawBeam(measureDiv, startIndex, endIndex) {
+  const startNote = measureDiv.querySelector(`[data-note-index="${startIndex}"]`);
+  const endNote = measureDiv.querySelector(`[data-note-index="${endIndex}"]`);
+  
+  if (!startNote || !endNote) return;
+  
+  const startRect = startNote.getBoundingClientRect();
+  const endRect = endNote.getBoundingClientRect();
+  const measureRect = measureDiv.getBoundingClientRect();
+  
+  const startX = startRect.left - measureRect.left;
+  const endX = endRect.right - measureRect.left;
+  const y = startRect.bottom - measureRect.top + 2;
+  
+  const beamDiv = document.createElement('div');
+  beamDiv.className = 'beam-line';
+  beamDiv.style.position = 'absolute';
+  beamDiv.style.left = startX + 'px';
+  beamDiv.style.top = y + 'px';
+  beamDiv.style.width = (endX - startX) + 'px';
+  beamDiv.style.height = '2px';
+  beamDiv.style.background = '#333';
+  beamDiv.style.pointerEvents = 'none';
+  beamDiv.style.zIndex = '2';
+  
+  measureDiv.appendChild(beamDiv);
+}
+
 // ---------- 渲染函数 ----------
 function renderScore() {
   const area = document.getElementById('score-area');
@@ -44,35 +73,6 @@ function renderScore() {
         el.classList.add("flat");
       }
       
-      // 添加增时线（右侧横线）
-      if (n.extendLine && n.extendLine > 0) {
-        const extendDiv = document.createElement("div");
-        extendDiv.className = "extend-line";
-        for (let i = 0; i < n.extendLine; i++) {
-          const line = document.createElement("span");
-          line.textContent = "—";
-          extendDiv.appendChild(line);
-        }
-        el.appendChild(extendDiv);
-      }
-      
-      // 添加减时线（下方横线）
-      // 根据时值自动添加：八分音符=1条线，十六分音符=2条线
-      let autoReduceLine = 0;
-      if (n.duration === 1) autoReduceLine = 1; // 八分音符
-      if (n.duration === 0.5) autoReduceLine = 2; // 十六分音符
-      
-      const totalReduceLine = (n.reduceLine || 0) + autoReduceLine;
-      if (totalReduceLine > 0) {
-        const reduceDiv = document.createElement("div");
-        reduceDiv.className = "reduce-line";
-        for (let i = 0; i < totalReduceLine; i++) {
-          const line = document.createElement("span");
-          reduceDiv.appendChild(line);
-        }
-        el.appendChild(reduceDiv);
-      }
-      
       // 添加附点
       if (n.dotted && n.dotted > 0) {
         const dottedDiv = document.createElement("div");
@@ -97,6 +97,30 @@ function renderScore() {
       el.dataset.noteIndex = ni;
       mDiv.appendChild(el);
     });
+
+    // 绘制连梁（beam）- 连接连续的八分音符或更短音符
+    setTimeout(() => {
+      let beamStart = -1;
+      m.forEach((n, ni) => {
+        const needsBeam = n.type !== "rest" && (n.duration === 1 || n.duration === 0.5);
+        
+        if (needsBeam && beamStart === -1) {
+          // 开始一组连梁
+          beamStart = ni;
+        } else if (!needsBeam && beamStart !== -1) {
+          // 结束一组连梁
+          if (ni - beamStart > 1) {
+            drawBeam(mDiv, beamStart, ni - 1);
+          }
+          beamStart = -1;
+        }
+      });
+      
+      // 处理最后一组
+      if (beamStart !== -1 && m.length - beamStart > 1) {
+        drawBeam(mDiv, beamStart, m.length - 1);
+      }
+    }, 0);
 
     // 绘制连音线
     m.forEach((n, ni) => {
@@ -168,16 +192,21 @@ function selectNote(mi, ni, el) {
   document.getElementById("noSelection").style.display = "none";
   const form = document.getElementById("editorForm");
   form.style.display = "block";
-  form.querySelector("#editStep").value = n.step || "C";
-  form.querySelector("#editAlter").value = n.alter || 0;
-  form.querySelector("#editOctave").value = n.octave || 4;
-  form.querySelector("#editOctaveShift").value = n.octaveShift || 0;
-  form.querySelector("#editDur").value = n.duration || 2;
-  form.querySelector("#editExtendLine").value = n.extendLine || 0;
-  form.querySelector("#editReduceLine").value = n.reduceLine || 0;
-  form.querySelector("#editDotted").value = n.dotted || 0;
-  form.querySelector("#editSlur").value = n.slur || "";
-  form.querySelector("#editBeam").value = n.beam || "";
+  
+  // 设置radio button的选中状态
+  const setRadio = (name, value) => {
+    const radio = form.querySelector(`input[name="${name}"][value="${value}"]`);
+    if (radio) radio.checked = true;
+  };
+  
+  setRadio("editStep", n.step || "C");
+  setRadio("editAlter", n.alter || 0);
+  setRadio("editOctave", n.octave || 4);
+  setRadio("editOctaveShift", n.octaveShift || 0);
+  setRadio("editDur", n.duration || 2);
+  setRadio("editDotted", n.dotted || 0);
+  setRadio("editSlur", n.slur || "");
+  setRadio("editBeam", n.beam || "");
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -186,17 +215,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const s = Editor.selected;
     if (!s) return;
     const n = Editor.measures[s.mi][s.ni];
-    n.step = document.getElementById("editStep").value;
-    n.alter = parseInt(document.getElementById("editAlter").value);
-    n.octave = parseInt(document.getElementById("editOctave").value);
-    n.octaveShift = parseInt(document.getElementById("editOctaveShift").value);
-    n.duration = parseInt(document.getElementById("editDur").value);
-    n.extendLine = parseInt(document.getElementById("editExtendLine").value);
-    n.reduceLine = parseInt(document.getElementById("editReduceLine").value);
-    n.dotted = parseInt(document.getElementById("editDotted").value);
+    
+    // 读取radio button的值
+    const getRadio = (name) => {
+      const radio = document.querySelector(`input[name="${name}"]:checked`);
+      return radio ? radio.value : null;
+    };
+    
+    n.step = getRadio("editStep");
+    n.alter = parseInt(getRadio("editAlter"));
+    n.octave = parseInt(getRadio("editOctave"));
+    n.octaveShift = parseInt(getRadio("editOctaveShift"));
+    n.duration = parseInt(getRadio("editDur"));
+    n.dotted = parseInt(getRadio("editDotted"));
     n.xml_type = durName(n.duration);
-    n.slur = document.getElementById("editSlur").value || undefined;
-    n.beam = document.getElementById("editBeam").value || undefined;
+    n.slur = getRadio("editSlur") || undefined;
+    n.beam = getRadio("editBeam") || undefined;
     renderScore();
   };
 
@@ -204,16 +238,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("addNoteBtn").onclick = () => {
     const active = document.querySelector(".tone.activeStep");
     const step = active ? active.dataset.step : null;
-    const alter = parseInt(document.getElementById("alterSel").value);
-    const oct = parseInt(document.getElementById("octSel").value);
-    const octaveShift = parseInt(document.getElementById("octaveShiftSel").value);
-    const dur = parseInt(document.getElementById("durSel").value);
-    const extendLine = parseInt(document.getElementById("extendLineSel").value);
-    const reduceLine = parseInt(document.getElementById("reduceLineSel").value);
-    const dotted = parseInt(document.getElementById("dottedSel").value);
+    
+    // 读取radio button的值
+    const getRadio = (name) => {
+      const radio = document.querySelector(`input[name="${name}"]:checked`);
+      return radio ? radio.value : null;
+    };
+    
+    const alter = parseInt(getRadio("alter"));
+    const oct = parseInt(getRadio("octave"));
+    const octaveShift = parseInt(getRadio("octaveShift"));
+    const dur = parseInt(getRadio("duration"));
+    const dotted = parseInt(getRadio("dotted"));
     const note = step
-      ? { type: "note", step, alter, octave: oct, octaveShift, duration: dur, extendLine, reduceLine, dotted, xml_type: durName(dur) }
-      : { type: "rest", duration: dur, extendLine, reduceLine, xml_type: durName(dur) };
+      ? { type: "note", step, alter, octave: oct, octaveShift, duration: dur, dotted, xml_type: durName(dur) }
+      : { type: "rest", duration: dur, xml_type: durName(dur) };
     if (Editor.measures.length === 0) Editor.measures.push([]);
     Editor.measures.at(-1).push(note);
     renderScore();

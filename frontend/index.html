@@ -22,6 +22,7 @@
     <!-- 左侧面板 -->
     <div id="note-palette">
       <h4>🎵 音符面板</h4>
+      <button id="addNoteBtn">添加音符到当前小节</button>
       <div id="palette-tones">
         <button class="tone" data-step="C">1</button>
         <button class="tone" data-step="D">2</button>
@@ -33,64 +34,41 @@
         <button id="restBtn">休</button>
       </div>
 
-      <label>升降号:
-        <select id="alterSel">
-          <option value="0">♮</option>
-          <option value="1">♯</option>
-          <option value="-1">♭</option>
-        </select>
-      </label>
+      <fieldset>
+        <legend>升降号</legend>
+        <label><input type="radio" name="alter" value="0" checked> ♮</label>
+        <label><input type="radio" name="alter" value="1"> ♯</label>
+        <label><input type="radio" name="alter" value="-1"> ♭</label>
+      </fieldset>
 
-      <label>八度:
-        <select id="octSel">
-          <option>3</option>
-          <option selected>4</option>
-          <option>5</option>
-        </select>
-      </label>
+      <fieldset>
+        <legend>八度</legend>
+        <label><input type="radio" name="octave" value="3"> 3</label>
+        <label><input type="radio" name="octave" value="4" checked> 4</label>
+        <label><input type="radio" name="octave" value="5"> 5</label>
+      </fieldset>
 
-      <label>八度升降:
-        <select id="octaveShiftSel">
-          <option value="0" selected>不变</option>
-          <option value="1">升八度 ●</option>
-          <option value="-1">降八度 ●</option>
-        </select>
-      </label>
+      <fieldset>
+        <legend>八度升降</legend>
+        <label><input type="radio" name="octaveShift" value="0" checked> 不变</label>
+        <label><input type="radio" name="octaveShift" value="1"> 升八度●</label>
+        <label><input type="radio" name="octaveShift" value="-1"> 降八度●</label>
+      </fieldset>
 
-      <label>时值:
-        <select id="durSel">
-          <option value="1">八分</option>
-          <option value="2" selected>四分</option>
-          <option value="4">二分</option>
-          <option value="8">全音符</option>
-        </select>
-      </label>
+      <fieldset>
+        <legend>时值</legend>
+        <label><input type="radio" name="duration" value="1"> 八分</label>
+        <label><input type="radio" name="duration" value="2" checked> 四分</label>
+        <label><input type="radio" name="duration" value="4"> 二分</label>
+        <label><input type="radio" name="duration" value="8"> 全音符</label>
+      </fieldset>
 
-      <label>增时线:
-        <select id="extendLineSel">
-          <option value="0" selected>无</option>
-          <option value="1">1条 -</option>
-          <option value="2">2条 - -</option>
-          <option value="3">3条 - - -</option>
-        </select>
-      </label>
+      <fieldset>
+        <legend>附点</legend>
+        <label><input type="radio" name="dotted" value="0" checked> 无</label>
+        <label><input type="radio" name="dotted" value="1"> 附点·</label>
+      </fieldset>
 
-      <label>减时线:
-        <select id="reduceLineSel">
-          <option value="0" selected>无</option>
-          <option value="1">1条</option>
-          <option value="2">2条</option>
-        </select>
-      </label>
-
-      <label>附点:
-        <select id="dottedSel">
-          <option value="0" selected>无</option>
-          <option value="1">附点 ·</option>
-        </select>
-      </label>
-
-      <button id="addNoteBtn">添加音符到当前小节</button>
     </div>
 
     <!-- 中间展示 -->
@@ -102,62 +80,67 @@
       <div id="noSelection">点击音符以编辑属性。</div>
 
       <div id="editorForm" style="display:none;">
-        <label>音名:<select id="editStep">
-            <option>C</option>
-            <option>D</option>
-            <option>E</option>
-            <option>F</option>
-            <option>G</option>
-            <option>A</option>
-            <option>B</option>
-          </select></label>
-        <label>升降号:<select id="editAlter">
-            <option value="0">♮</option>
-            <option value="1">♯</option>
-            <option value="-1">♭</option>
-          </select></label>
-        <label>八度:<select id="editOctave">
-            <option>3</option>
-            <option selected>4</option>
-            <option>5</option>
-          </select></label>
-        <label>八度升降:<select id="editOctaveShift">
-            <option value="0" selected>不变</option>
-            <option value="1">升八度 ●</option>
-            <option value="-1">降八度 ●</option>
-          </select></label>
-        <label>时值:<select id="editDur">
-            <option value="1">八分</option>
-            <option value="2">四分</option>
-            <option value="4">二分</option>
-            <option value="8">全音符</option>
-          </select></label>
-        <label>增时线:<select id="editExtendLine">
-            <option value="0" selected>无</option>
-            <option value="1">1条 -</option>
-            <option value="2">2条 - -</option>
-            <option value="3">3条 - - -</option>
-          </select></label>
-        <label>减时线:<select id="editReduceLine">
-            <option value="0" selected>无</option>
-            <option value="1">1条</option>
-            <option value="2">2条</option>
-          </select></label>
-        <label>附点:<select id="editDotted">
-            <option value="0" selected>无</option>
-            <option value="1">附点 ·</option>
-          </select></label>
-        <label>连音:<select id="editSlur">
-            <option value="">无</option>
-            <option value="start">start</option>
-            <option value="stop">stop</option>
-          </select></label>
-        <label>Beam:<select id="editBeam">
-            <option value="">无</option>
-            <option value="begin">begin</option>
-            <option value="continue">continue</option>
-            <option value="end">end</option>
-          </select></label>
+        <fieldset>
+          <legend>音名</legend>
+          <label><input type="radio" name="editStep" value="C"> C</label>
+          <label><input type="radio" name="editStep" value="D"> D</label>
+          <label><input type="radio" name="editStep" value="E"> E</label>
+          <label><input type="radio" name="editStep" value="F"> F</label>
+          <label><input type="radio" name="editStep" value="G"> G</label>
+          <label><input type="radio" name="editStep" value="A"> A</label>
+          <label><input type="radio" name="editStep" value="B"> B</label>
+        </fieldset>
+        
+        <fieldset>
+          <legend>升降号</legend>
+          <label><input type="radio" name="editAlter" value="0"> ♮</label>
+          <label><input type="radio" name="editAlter" value="1"> ♯</label>
+          <label><input type="radio" name="editAlter" value="-1"> ♭</label>
+        </fieldset>
+        
+        <fieldset>
+          <legend>八度</legend>
+          <label><input type="radio" name="editOctave" value="3"> 3</label>
+          <label><input type="radio" name="editOctave" value="4"> 4</label>
+          <label><input type="radio" name="editOctave" value="5"> 5</label>
+        </fieldset>
+        
+        <fieldset>
+          <legend>八度升降</legend>
+          <label><input type="radio" name="editOctaveShift" value="0"> 不变</label>
+          <label><input type="radio" name="editOctaveShift" value="1"> 升八度●</label>
+          <label><input type="radio" name="editOctaveShift" value="-1"> 降八度●</label>
+        </fieldset>
+        
+        <fieldset>
+          <legend>时值</legend>
+          <label><input type="radio" name="editDur" value="1"> 八分</label>
+          <label><input type="radio" name="editDur" value="2"> 四分</label>
+          <label><input type="radio" name="editDur" value="4"> 二分</label>
+          <label><input type="radio" name="editDur" value="8"> 全音符</label>
+        </fieldset>
+        
+        <fieldset>
+          <legend>附点</legend>
+          <label><input type="radio" name="editDotted" value="0"> 无</label>
+          <label><input type="radio" name="editDotted" value="1"> 附点·</label>
+        </fieldset>
+        
+        <fieldset>
+          <legend>连音</legend>
+          <label><input type="radio" name="editSlur" value=""> 无</label>
+          <label><input type="radio" name="editSlur" value="start"> start</label>
+          <label><input type="radio" name="editSlur" value="stop"> stop</label>
+        </fieldset>
+        
+        <fieldset>
+          <legend>Beam</legend>
+          <label><input type="radio" name="editBeam" value=""> 无</label>
+          <label><input type="radio" name="editBeam" value="begin"> begin</label>
+          <label><input type="radio" name="editBeam" value="continue"> continue</label>
+          <label><input type="radio" name="editBeam" value="end"> end</label>
+        </fieldset>
+        
         <button id="updateNote">更新音符</button>
       </div>
     </div>
